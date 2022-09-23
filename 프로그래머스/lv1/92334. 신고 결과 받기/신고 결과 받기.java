@@ -1,52 +1,32 @@
 import java.util.*;
-
+import java.util.Map.Entry;
 class Solution {
     public int[] solution(String[] id_list, String[] report, int k) {
         int[] answer = new int[id_list.length];
         
-        HashMap<String, Integer> answerMap = new HashMap<>();
-        HashMap<String, HashSet<String>> reportChart = new HashMap<>(); 
-        
-        // 0. answerMap 초기화 
-        for (String id : id_list) {
-            answerMap.put(id, 0);
+        HashMap<String, Integer> idIndex = new HashMap<>();
+        for (int i = 0; i < id_list.length; i++) {
+            idIndex.put(id_list[i], i);
         }
         
-        // 1. report 정리
-        StringTokenizer st;
-        for (String issue : report) {
-            st = new StringTokenizer(issue);
-            String user = st.nextToken();
-            String reportedID = st.nextToken();
-            
-            if (!reportChart.containsKey(reportedID)) {
-                reportChart.put(reportedID, new HashSet<String>());
-            }
-            reportChart.get(reportedID).add(user);
+        HashMap<String, HashSet<String>> reportList = new HashMap<>();//신고 당한 사람: 신고 한 사람
+        
+        for (String reportInfo : report) {
+            String[] reports = reportInfo.split(" ");//0: 신고한 사람, 1: 신고 당한 사람
+            reportList.putIfAbsent(reports[1], new HashSet<>());
+            reportList.get(reports[1]).add(reports[0]);
         }
         
-        // 2. k 이상일 경우 answerMap 값 증가
-        Iterator<String> keys = reportChart.keySet().iterator();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            HashSet<String> users = reportChart.get(key);
+        for (Entry<String, HashSet<String>> entry : reportList.entrySet()) {
+            HashSet<String> getMailUser = entry.getValue();
             
-            if (users.size() >= k) {
-                Iterator<String> setKeys = users.iterator();
-                while (setKeys.hasNext()) {
-                    String reporter = setKeys.next();
-                    answerMap.put(reporter, answerMap.get(reporter) + 1);
+            if (getMailUser.size() >= k) {//정지
+                for (String userId : getMailUser) {
+                    answer[idIndex.get(userId)]++;
                 }
             }
+            
         }
-        
-        // 3. answer
-        int index = 0;
-        for (String id : id_list) {
-            answer[index] = answerMap.get(id);
-            index++;
-        }
-        
         
         return answer;
     }
